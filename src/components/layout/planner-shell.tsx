@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const navigation = [
   "Overview",
@@ -18,6 +19,7 @@ const navigation = [
 export function PlannerShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [updatesOpen, setUpdatesOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className="planner-shell">
@@ -34,11 +36,34 @@ export function PlannerShell({ children }: { children: React.ReactNode }) {
         </div>
         <p className="sidebar-caption sidebar-caption--workspace">PLANNER WORKSPACE</p>
         <nav className="sidebar-nav">
-          {navigation.map((item) => item === "Overview" ? (
-            <Link className="sidebar-nav__item sidebar-nav__item--active" href="/planner/overview" key={item} onClick={() => setMenuOpen(false)} aria-current="page">{item}</Link>
-          ) : (
-            <span className="sidebar-nav__item sidebar-nav__item--disabled" aria-disabled="true" key={item} title="Not included in this implementation phase">{item}</span>
-          ))}
+          {navigation.map((item) => {
+            const isOverview = item === "Overview";
+            const isOrders = item === "Orders & products";
+            const href = isOverview ? "/planner/overview" : "/planner/orders";
+            const active = isOverview
+              ? pathname === href
+              : isOrders && (pathname.startsWith("/planner/orders") || pathname.startsWith("/planner/products"));
+
+            if (isOverview || isOrders) {
+              return (
+                <Link
+                  aria-current={active ? "page" : undefined}
+                  className={`sidebar-nav__item ${active ? "sidebar-nav__item--active" : ""}`}
+                  href={href}
+                  key={item}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item}
+                </Link>
+              );
+            }
+
+            return (
+              <span className="sidebar-nav__item sidebar-nav__item--disabled" aria-disabled="true" key={item} title="Not included in this implementation phase">
+                {item}
+              </span>
+            );
+          })}
         </nav>
         <div className="sidebar-user">
           <span className="sidebar-user__avatar" aria-hidden="true">NP</span>
